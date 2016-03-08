@@ -66,19 +66,17 @@ namespace LibGit2Sharp.Core
             }
 
             int length = encoding.GetByteCount(value);
-            var buffer = (byte*)Marshal.AllocHGlobal(length + 1).ToPointer();
+            var buffer = Marshal.AllocHGlobal(length + 1);
 
             if (length > 0)
             {
-                fixed (char* pValue = value)
-                {
-                    encoding.GetBytes(pValue, value.Length, buffer, length);
-                }
+                byte[] bytes = new byte[length + 1];
+                encoding.GetBytes(value, 0, value.Length, bytes, 0);
+                bytes[length] = 0;
+                Marshal.Copy(bytes, 0, buffer, length + 1);
             }
 
-            buffer[length] = 0;
-
-            return new IntPtr(buffer);
+            return buffer;
         }
 
         public static void Cleanup(IntPtr pNativeData)
